@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/jpared3s/tinyapp/issues"
   },
-  "homepage": "https://github.com/jpared3s/tinyapp#readme"
+  "homepage": "https://github.com/jpared3s/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }

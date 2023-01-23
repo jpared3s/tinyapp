@@ -45,9 +45,21 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  console.log(generateRandomString());
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  // console.log(req.body); // Log the POST request body to the console
+  // console.log(generateRandomString());
+  let shortId = generateRandomString();
+  // console.log(urlDatabase)
+  urlDatabase[shortId] = req.body.longURL
+  console.log(urlDatabase)
+  res.redirect(`/urls/${shortId}`); // Respond with 'Ok' (we will replace this)
+});
+
+app.get("/u/:id", (req, res) => {
+  const shortID = req.params.id
+  console.log(shortID)
+  const longURL = urlDatabase[shortID];
+  console.log(longURL)
+  res.redirect(longURL);
 });
 
 app.listen(PORT, () => {

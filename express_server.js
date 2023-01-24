@@ -13,7 +13,7 @@ const urlDatabase = {
 
 function generateRandomString() {
   let result = '';
-  let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for (let i = 6; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
   return result;
 }
@@ -49,17 +49,24 @@ app.post("/urls", (req, res) => {
   // console.log(generateRandomString());
   let shortId = generateRandomString();
   // console.log(urlDatabase)
-  urlDatabase[shortId] = req.body.longURL
-  console.log(urlDatabase)
+  urlDatabase[shortId] = req.body.longURL;
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortId}`); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:id", (req, res) => {
-  const shortID = req.params.id
-  console.log(shortID)
+  const shortID = req.params.id;
+  console.log(shortID);
   const longURL = urlDatabase[shortID];
-  console.log(longURL)
+  console.log(longURL);
   res.redirect(longURL);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  console.log(req.params);
+  const id = req.params.id;
+  delete urlDatabase[id];
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {

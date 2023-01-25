@@ -36,14 +36,12 @@ function generateRandomString() {
 }
 
 function getUserByEmail(email) {
-  let user;
   for (let key in users) {
     if (users[key].email === email) {
-      user = users[key];
-      break;
+      return users[key];
     }
   }
-  return user;
+  return false;
 }
 
 app.get("/", (req, res) => {
@@ -132,7 +130,10 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  res.render('register');
+  const templateVars = {
+    user: users[req.cookies["user_id"]],
+  };
+  res.render('register', templateVars);
 });
 
 app.post("/register", (req, res) => {
@@ -153,6 +154,13 @@ app.post("/register", (req, res) => {
   console.log(users);
   res.redirect('/urls');
 });
+
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: users[req.cookies["user_id"]],
+  };
+  res.render('login', templateVars)
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

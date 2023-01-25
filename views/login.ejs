@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -11,17 +10,17 @@
       integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
       crossorigin="anonymous"
     />
-  <title>Register</title>
+  <title>Login Page</title>
 </head>
-
 <body>
   <%- include('partials/_header', {userA:user}) %>
   <br>
-  <form method="POST" action="/register">
-    <input type="email" name="email">
-    <input type="password" name="password">
-    <input type="submit" name="submit">
+  <form method="POST" action="/login">
+    <form method="POST" action="/register">
+      <input type="email" name="email">
+      <input type="password" name="password">
+      <input type="submit" name="submit">
+    </form>
   </form>
-
 </body>
 </html>

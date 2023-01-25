@@ -65,11 +65,16 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]],
-    // urls: urlDatabase
-  };
-  res.render('urls_new', templateVars);
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.redirect("/login");
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]],
+      // urls: urlDatabase
+    };
+    res.render('urls_new', templateVars);
+  }
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -82,19 +87,25 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body); // Log the POST request body to the console
-  // console.log(generateRandomString());
+  const user = req.cookies['user_id'];
+  if(!user) {
+  res.status(403).send("You cannot shorten URLS")
+  return;
+  }
   let shortId = generateRandomString();
-  // console.log(urlDatabase)
   urlDatabase[shortId] = req.body.longURL;
   console.log(urlDatabase);
-  res.redirect(`/urls/${shortId}`); // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${shortId}`);
 });
 
 app.get("/u/:id", (req, res) => {
   const shortID = req.params.id;
   console.log(shortID);
   const longURL = urlDatabase[shortID];
+  if(!longURL) {
+    res.status(404).send("Page Not Found")
+    return;
+    }
   console.log(longURL);
   res.redirect(longURL);
 });
@@ -138,10 +149,15 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]],
-  };
-  res.render('register', templateVars);
+  const user = req.cookies['user_id'];
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]],
+    };
+    res.render('register', templateVars);
+  }
 });
 
 app.post("/register", (req, res) => {
@@ -164,11 +180,16 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]],
-  };
-  res.render('login', templateVars)
-})
+  const user = req.cookies['user_id'];
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]],
+    };
+    res.render('login', templateVars);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);

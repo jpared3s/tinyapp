@@ -35,6 +35,17 @@ function generateRandomString() {
   return result;
 }
 
+function getUserByEmail(email) {
+  let user;
+  for (let key in users) {
+    if (users[key].email === email) {
+      user = users[key];
+      break;
+    }
+  }
+  return user;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -64,9 +75,11 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, 
-    longURL: urlDatabase[req.params.id], 
-    user: users[req.cookies["user_id"]] };
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    user: users[req.cookies["user_id"]]
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -123,17 +136,25 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send('Error: Email and password are required');
+  }
+  if (getUserByEmail(email)) {
+    return res.status(400).send('Error: Email already in use');
+  }
   const userId = generateRandomString();
   users[userId] = {
     id: userId,
     email: req.body.email,
     password: req.body.password
-  }
-  res.cookie("user_id", userId)
-  console.log(users)
+  };
+  res.cookie("user_id", userId);
+  console.log(users);
   res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+

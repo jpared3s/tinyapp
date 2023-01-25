@@ -120,13 +120,21 @@ app.post("/urls/:id/edit", (req, res) => {
   }
 });
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.email);
-  // res.cookie('name', 'tobi', { domain: '.example.com', path: '/admin', secure: true })
+  const { email, password } = req.body;
+  const user = getUserByEmail(email);
+  if (!user) {
+    return res.status(403).send('Error: Email not found');
+  }
+  if (user.password !== password) {
+    return res.status(403).send('Error: Incorrect password');
+  }
+  res.cookie("user_id", user.id);
   res.redirect('/urls');
 });
+
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {

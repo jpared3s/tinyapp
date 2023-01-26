@@ -11,8 +11,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: 'userRandomID',
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: 'userRandomID',
+  },
 };
 
 const users = {
@@ -80,7 +86,7 @@ app.get('/urls/new', (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
@@ -88,12 +94,12 @@ app.get("/urls/:id", (req, res) => {
 
 app.post("/urls", (req, res) => {
   const user = req.cookies['user_id'];
-  if(!user) {
-  res.status(403).send("You cannot shorten URLS")
-  return;
+  if (!user) {
+    res.status(403).send("You cannot shorten URLS");
+    return;
   }
   let shortId = generateRandomString();
-  urlDatabase[shortId] = req.body.longURL;
+  urlDatabase[shortId].longURL = req.body.longURL;
   console.log(urlDatabase);
   res.redirect(`/urls/${shortId}`);
 });
@@ -101,11 +107,11 @@ app.post("/urls", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const shortID = req.params.id;
   console.log(shortID);
-  const longURL = urlDatabase[shortID];
-  if(!longURL) {
-    res.status(404).send("Page Not Found")
+  const longURL = urlDatabase[shortID].longURL;
+  if (!longURL) {
+    res.status(404).send("Page Not Found");
     return;
-    }
+  }
   console.log(longURL);
   res.redirect(longURL);
 });
@@ -125,7 +131,7 @@ app.post("/urls/:id/edit", (req, res) => {
   const newURL = req.body.NewLongURL;
   for (let URL in urlDatabase) {
     if (URL === id) {
-      urlDatabase[id] = newURL;
+      urlDatabase[id].longUrl = newURL;
       return res.redirect('/urls');
     }
   }

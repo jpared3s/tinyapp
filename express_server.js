@@ -50,6 +50,16 @@ function getUserByEmail(email) {
   return false;
 }
 
+function urlsForUser(id) {
+  let userUrls = {};
+  for (const shortUrl in urlDatabase) {
+    if (urlDatabase[shortUrl].userID === id) {
+      userUrls[shortUrl] = urlDatabase[shortUrl];
+    }
+  }
+  return userUrls;
+}
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -63,9 +73,15 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.status(401).send("No access. Please log in or register.");
+    return;
+  }
+  const userUrls = urlsForUser(user);
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    urls: urlDatabase
+    urls: userUrls
   };
   res.render('urls_index', templateVars);
 });
@@ -84,6 +100,15 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.status(403).send("No access. Please log in or register.");
+    return;
+  }
+  if (urlDatabase[req.params.id].userID !== user) {
+    res.status(401).send("Error: You do not own the URL.");
+    return;
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
@@ -99,7 +124,7 @@ app.post("/urls", (req, res) => {
     return;
   }
   let shortId = generateRandomString();
-  urlDatabase[shortId].longURL = req.body.longURL;
+  urlDatabase[shortId] = { longURL: req.body.longURL };
   console.log(urlDatabase);
   res.redirect(`/urls/${shortId}`);
 });
@@ -117,16 +142,43 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.status(403).send("No access. Please log in or register.");
+    return;
+  }
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+    res.status(401).send("Error: You do not own the URL.");
+    return;
+  }
   console.log(req.params);
   const id = req.params.id;
   delete urlDatabase[id];
   res.redirect("/urls");
 });
 app.post("/urls/:id", (req, res) => {
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.status(403).send("No access. Please log in or register.");
+    return;
+  }
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+    res.status(401).send("Error: You do not own the URL.");
+    return;
+  }
   const id = req.params.id;
   res.redirect(`/urls/${id}`);
 });
 app.post("/urls/:id/edit", (req, res) => {
+  const user = req.cookies['user_id'];
+  if (!user) {
+    res.status(403).send("No access. Please log in or register.");
+    return;
+  }
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+    res.status(401).send("Error: You do not own the URL.");
+    return;
+  }
   const id = req.params.id;
   const newURL = req.body.NewLongURL;
   for (let URL in urlDatabase) {

@@ -23,7 +23,7 @@ describe('getUserByEmail', function() {
   });
   it('should return undefined if non existent email', function() {
     const actual = getUserByEmail("use1r@example.com", testUsers)
-    const expected = falsecd;
+    const expected = false;
     assert.equal(actual, expected )
   });
 });

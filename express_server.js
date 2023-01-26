@@ -4,18 +4,19 @@ const app = express();
 const PORT = 8080; // default port 8080
 // const cookieParser = require('cookie-parser');
 const bcrypt = require("bcryptjs");
+const {getUserByEmail} = require("./helpers.js");
 
 app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 
-// app.use(cookieParser());
+
 app.use(cookieSession({
   name: 'session',
   keys: ['toronto raptors'],
 
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+
+  maxAge: 24 * 60 * 60 * 1000 
 }))
 
 const urlDatabase = {
@@ -49,14 +50,6 @@ function generateRandomString() {
   return result;
 }
 
-function getUserByEmail(email) {
-  for (let key in users) {
-    if (users[key].email === email) {
-      return users[key];
-    }
-  }
-  return false;
-}
 
 function urlsForUser(id) {
   let userUrls = {};
@@ -81,12 +74,13 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const user = req.session['user_id'];//req.session.user_id = 'some value'
+  const user_id = req.session['user_id'];//req.session.user_id = 'some value'
+  const user = users[user_id];
   if (!user) {
     res.status(401).send("No access. Please log in or register.");
     return;
   }
-  const userUrls = urlsForUser(user);
+  const userUrls = urlsForUser(user_id);
   const templateVars = {
     user: users[req.session["user_id"]],//req.session.user_id = 'some value'
     urls: userUrls
@@ -95,7 +89,8 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (!user) {
     res.redirect("/login");
   } else {
@@ -108,12 +103,13 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (!user) {
     res.status(403).send("No access. Please log in or register.");
     return;
   }
-  if (urlDatabase[req.params.id].userID !== user) {
+  if (urlDatabase[req.params.id].userID !== user_id) {
     res.status(401).send("Error: You do not own the URL.");
     return;
   }
@@ -150,12 +146,13 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (!user) {
     res.status(403).send("No access. Please log in or register.");
     return;
   }
-  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user_id) {
     res.status(401).send("Error: You do not own the URL.");
     return;
   }
@@ -164,26 +161,30 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[id];
   res.redirect("/urls");
 });
+
 app.post("/urls/:id", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (!user) {
     res.status(403).send("No access. Please log in or register.");
     return;
   }
-  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user_id) {
     res.status(401).send("Error: You do not own the URL.");
     return;
   }
   const id = req.params.id;
   res.redirect(`/urls/${id}`);
 });
+
 app.post("/urls/:id/edit", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (!user) {
     res.status(403).send("No access. Please log in or register.");
     return;
   }
-  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user) {
+  if (!urlDatabase[req.params.id] || urlDatabase[req.params.id].userID !== user_id) {
     res.status(401).send("Error: You do not own the URL.");
     return;
   }
@@ -196,9 +197,10 @@ app.post("/urls/:id/edit", (req, res) => {
     }
   }
 });
+
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
   if (!user) {
     return res.status(403).send('Error: Email not found');
   }
@@ -217,7 +219,8 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (user) {
     res.redirect("/urls");
   } else {
@@ -233,7 +236,7 @@ app.post("/register", (req, res) => {
   if (!email || !password) {
     return res.status(400).send('Error: Email and password are required');
   }
-  if (getUserByEmail(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send('Error: Email already in use');
   }
   const userId = generateRandomString();
@@ -249,7 +252,8 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const user = req.session['user_id'];
+  const user_id = req.session['user_id'];
+  const user = users[user_id];
   if (user) {
     res.redirect("/urls");
   } else {

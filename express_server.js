@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
-
+const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs");
 
@@ -194,7 +194,7 @@ app.post("/login", (req, res) => {
   if (!user) {
     return res.status(403).send('Error: Email not found');
   }
-  if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     return res.status(403).send('Error: Incorrect password');
   }
   res.cookie("user_id", user.id);
@@ -230,7 +230,7 @@ app.post("/register", (req, res) => {
   users[userId] = {
     id: userId,
     email: req.body.email,
-    password: req.body.password
+    password: bcrypt.hashSync(req.body.password, 10)
   };
   res.cookie("user_id", userId);
   console.log(users);

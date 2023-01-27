@@ -1,5 +1,3 @@
-
-
 function getUserByEmail(email, users) {
   for (let key in users) {
     if (users[key].email === email) {
